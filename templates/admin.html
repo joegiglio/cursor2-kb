@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Admin Panel</h1>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}" role="alert">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<h2>Create New Topic</h2>
+<form action="{{ url_for('admin') }}" method="POST">
+    <input type="hidden" name="action" value="create">
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" name="topic_name" placeholder="Enter topic name" maxlength="25" required {% if topic_count >= 10 %}disabled{% endif %}>
+        <button class="btn btn-primary" type="submit" {% if topic_count >= 10 %}disabled{% endif %}>Create Topic</button>
+    </div>
+</form>
+<p>Existing topics: {{ topic_count }} / 10</p>
+
+<h2>Existing Topics</h2>
+{% if topics %}
+    <ul class="list-group" id="sortable-topics">
+    {% for topic in topics %}
+        <li class="list-group-item d-flex justify-content-between align-items-center" data-id="{{ topic.id }}">
+            <span class="handle">&#9776;</span>
+            {{ topic.name }}
+            <div>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ topic.id }}">Edit</button>
+                <form action="{{ url_for('admin') }}" method="POST" class="d-inline">
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="topic_id" value="{{ topic.id }}">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this topic?')">Delete</button>
+                </form>
+            </div>
+        </li>
+
+        <!-- Edit Modal -->
+        <div class="modal fade" id="editModal{{ topic.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ topic.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editModalLabel{{ topic.id }}">Edit Topic</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="{{ url_for('admin') }}" method="POST">
+                        <div class="modal-body">
+                            <input type="hidden" name="action" value="edit">
+                            <input type="hidden" name="topic_id" value="{{ topic.id }}">
+                            <div class="mb-3">
+                                <label for="new_name{{ topic.id }}" class="form-label">New Topic Name</label>
+                                <input type="text" class="form-control" id="new_name{{ topic.id }}" name="new_name" value="{{ topic.name }}" maxlength="25" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No topics available.</p>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var el = document.getElementById('sortable-topics');
+    var sortable = Sortable.create(el, {
+        handle: '.handle',
+        animation: 150,
+        onEnd: function (evt) {
+            var itemEl = evt.item;
+            var newOrder = Array.from(el.children).map(item => item.dataset.id);
+            
+            fetch('{{ url_for("update_sort_order") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({new_order: newOrder}),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    console.log('Sort order updated successfully');
+                } else {
+                    console.error('Failed to update sort order');
+                }
+            });
+        },
+    });
+});
+</script>
+{% endblock %}
