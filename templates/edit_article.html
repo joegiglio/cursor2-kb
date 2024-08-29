@@ -9,7 +9,7 @@
     </div>
     <div class="mb-3">
         <label for="content" class="form-label">Content</label>
-        <div id="editor" style="height: 300px;">{{ article.content|safe }}</div>
+        <div id="editor" style="height: 300px;"></div>
         <input type="hidden" name="content" id="content">
     </div>
     <button type="submit" class="btn btn-primary">Update Article</button>
@@ -26,10 +26,14 @@ $(document).ready(function() {
                 [{ 'header': [1, 2, 3, false] }],
                 ['bold', 'italic', 'underline'],
                 ['link', 'image'],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }]
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['blockquote', 'code-block']
             ]
         }
     });
+
+    // Load the content into the editor
+    quill.root.innerHTML = {{ article.content|tojson|safe }};
 
     quill.getModule('toolbar').addHandler('image', function() {
         selectLocalImage();

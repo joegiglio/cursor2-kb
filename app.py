@@ -12,6 +12,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'your_secret_key_here'  # Change this to a random secret key
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
+# Ensure the upload folder exists
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -121,7 +124,8 @@ def new_article(topic_id):
         else:
             title = request.form.get('title')
             content = request.form.get('content')
-            content = bleach.clean(content, tags=['p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li', 'a', 'img'],
+            # Use a more permissive bleach cleaning
+            content = bleach.clean(content, tags=['p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li', 'a', 'img', 'h1', 'h2', 'h3', 'blockquote', 'pre', 'code'],
                                    attributes={'a': ['href', 'target'], 'img': ['src', 'alt']})
             max_sort_order = db.session.query(func.max(Article.sort_order)).filter_by(topic_id=topic_id).scalar() or 0
             new_article = Article(title=title, content=content, topic_id=topic_id, sort_order=max_sort_order + 1)
@@ -137,7 +141,9 @@ def edit_article(topic_id, article_id):
     article = Article.query.get_or_404(article_id)
     if request.method == 'POST':
         article.title = request.form.get('title')
-        article.content = bleach.clean(request.form.get('content'), tags=['p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li', 'a', 'img'],
+        content = request.form.get('content')
+        # Use a more permissive bleach cleaning
+        article.content = bleach.clean(content, tags=['p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li', 'a', 'img', 'h1', 'h2', 'h3', 'blockquote', 'pre', 'code'],
                                        attributes={'a': ['href', 'target'], 'img': ['src', 'alt']})
         db.session.commit()
         flash('Article updated successfully.', 'success')
