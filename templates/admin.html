@@ -16,11 +16,11 @@
 <form action="{{ url_for('admin') }}" method="POST">
     <input type="hidden" name="action" value="create">
     <div class="input-group mb-3">
-        <input type="text" class="form-control" name="topic_name" placeholder="Enter topic name" maxlength="25" required {% if topic_count >= 10 %}disabled{% endif %}>
-        <button class="btn btn-primary" type="submit" {% if topic_count >= 10 %}disabled{% endif %}>Create Topic</button>
+        <input type="text" class="form-control" name="topic_name" placeholder="Enter topic name" maxlength="25" required {% if topic_count >= max_topics %}disabled{% endif %}>
+        <button class="btn btn-primary" type="submit" {% if topic_count >= max_topics %}disabled{% endif %}>Create Topic</button>
     </div>
 </form>
-<p>Existing topics: {{ topic_count }} / 10</p>
+<p>Existing topics: {{ topic_count }} / {{ max_topics }}</p>
 
 <h2>Existing Topics</h2>
 {% if topics %}
@@ -28,7 +28,8 @@
     {% for topic in topics %}
         <li class="list-group-item d-flex justify-content-between align-items-center" data-id="{{ topic.id }}">
             <span class="handle">&#9776;</span>
-            {{ topic.name }}
+            <a href="{{ url_for('admin_topic', topic_id=topic.id) }}">{{ topic.name }}</a>
+            <span class="badge bg-primary rounded-pill">{{ topic.articles|length }} / {{ max_articles }}</span>
             <div>
                 <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ topic.id }}">Edit</button>
                 <form action="{{ url_for('admin') }}" method="POST" class="d-inline">
@@ -72,27 +73,29 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+$(document).ready(function() {
     var el = document.getElementById('sortable-topics');
     var sortable = Sortable.create(el, {
         handle: '.handle',
         animation: 150,
         onEnd: function (evt) {
-            var itemEl = evt.item;
-            var newOrder = Array.from(el.children).map(item => item.dataset.id);
+            var newOrder = $(el).children().map(function() {
+                return $(this).data('id');
+            }).get();
             
-            fetch('{{ url_for("update_sort_order") }}', {
+            $.ajax({
+                url: '{{ url_for("update_sort_order") }}',
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
+                contentType: 'application/json',
+                data: JSON.stringify({new_order: newOrder}),
+                success: function(data) {
+                    if (data.status === 'success') {
+                        console.log('Sort order updated successfully');
+                    } else {
+                        console.error('Failed to update sort order');
+                    }
                 },
-                body: JSON.stringify({new_order: newOrder}),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    console.log('Sort order updated successfully');
-                } else {
+                error: function() {
                     console.error('Failed to update sort order');
                 }
             });

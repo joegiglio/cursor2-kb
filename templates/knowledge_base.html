@@ -1,24 +1,54 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Knowledge Base</h1>
-<div class="row">
-    <div class="col-md-6 offset-md-3">
-        <form action="{{ url_for('knowledge_base') }}" method="GET">
-            <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="Search the knowledge base" name="q" maxlength="100">
-                <button class="btn btn-primary" type="submit">Search</button>
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Knowledge Base</h1>
+    
+    <!-- Search Bar (Placeholder) -->
+    <div class="row mb-4">
+        <div class="col-md-8 offset-md-2">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search the knowledge base (Coming soon!)" disabled>
+                <button class="btn btn-primary" type="button" disabled>Search</button>
             </div>
-        </form>
+        </div>
+    </div>
+
+    <!-- Topics Cards -->
+    <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+        {% for topic in topics %}
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ topic.name }}</h5>
+                    {% if topic.description %}
+                    <p class="card-text">{{ topic.description }}</p>
+                    {% else %}
+                    <p class="card-text text-muted">No description available</p>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <a href="#" class="btn btn-primary btn-sm">Learn More</a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <p class="text-center">No topics available.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Email Suggestion -->
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Need more help?</h5>
+                    <p class="card-text">If you couldn't find what you were looking for, please don't hesitate to contact us.</p>
+                    <a href="mailto:support@example.com" class="btn btn-primary">Send us an email</a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-<h2>Topics</h2>
-{% if topics %}
-    <ul>
-    {% for topic in topics %}
-        <li>{{ topic.name }}</li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No topics available.</p>
-{% endif %}
 {% endblock %}

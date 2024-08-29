@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>New Article for {{ topic.name }}</h1>
+
+<form action="{{ url_for('new_article', topic_id=topic.id) }}" method="POST">
+    <div class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <input type="text" class="form-control" id="title" name="title" required maxlength="100">
+    </div>
+    <div class="mb-3">
+        <label for="content" class="form-label">Content</label>
+        <div id="editor" style="height: 300px;"></div>
+        <input type="hidden" name="content" id="content">
+    </div>
+    <button type="submit" class="btn btn-primary">Create Article</button>
+</form>
+
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script>
+$(document).ready(function() {
+    var quill = new Quill('#editor', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline'],
+                ['link', 'image'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }]
+            ]
+        }
+    });
+
+    quill.getModule('toolbar').addHandler('image', function() {
+        selectLocalImage();
+    });
+
+    function selectLocalImage() {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.click();
+
+        input.onchange = () => {
+            const file = input.files[0];
+            if (file) {
+                uploadImage(file);
+            }
+        };
+    }
+
+    function uploadImage(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        $.ajax({
+            url: '{{ url_for("upload_image") }}',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                if (response.success) {
+                    const range = quill.getSelection();
+                    quill.insertEmbed(range.index, 'image', response.url);
+                } else {
+                    console.error('Image upload failed:', response.message);
+                    alert('Image upload failed: ' + response.message);
+                }
+            },
+            error: function() {
+                console.error('Image upload failed');
+                alert('Image upload failed. Please try again.');
+            }
+        });
+    }
+
+    $('form').submit(function() {
+        $('#content').val(quill.root.innerHTML);
+    });
+});
+</script>
+{% endblock %}

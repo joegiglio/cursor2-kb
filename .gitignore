@@ -21,3 +21,6 @@ Thumbs.db
 
 # Flask-Migrate
 migrations/
+
+# Uploaded files
+static/uploads/
