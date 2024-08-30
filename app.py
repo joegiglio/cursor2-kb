@@ -5,6 +5,7 @@ from sqlalchemy import func
 import bleach
 import os
 from werkzeug.utils import secure_filename
+from sqlalchemy.orm import joinedload
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///topics.db'
@@ -54,7 +55,7 @@ def index():
 
 @app.route('/knowledge-base')
 def knowledge_base():
-    topics = Topic.query.order_by(Topic.sort_order).all()
+    topics = Topic.query.options(joinedload(Topic.articles)).order_by(Topic.sort_order).all()
     return render_template('knowledge_base.html', active_page='knowledge_base', topics=topics)
 
 @app.route('/admin', methods=['GET', 'POST'])
@@ -198,6 +199,12 @@ def upload_image():
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/knowledge-base/topic/<int:topic_id>/article/<int:article_id>')
+def view_article(topic_id, article_id):
+    topic = Topic.query.get_or_404(topic_id)
+    article = Article.query.get_or_404(article_id)
+    return render_template('view_article.html', topic=topic, article=article)
 
 if __name__ == '__main__':
     app.run(debug=True)

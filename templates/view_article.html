@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('knowledge_base') }}">Knowledge Base</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ topic.name }}</li>
+        </ol>
+    </nav>
+    <h1>{{ article.title }}</h1>
+    <div class="mt-4">
+        {{ article.content|safe }}
+    </div>
+    <a href="{{ url_for('knowledge_base') }}" class="btn btn-primary mt-4">Back to Knowledge Base</a>
+</div>
+{% endblock %}
