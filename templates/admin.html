@@ -1,14 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
-<style>
-    .card {
-        transition: box-shadow 0.3s ease-in-out;
-    }
-    .card:hover {
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-</style>
 <div class="container mt-4">
+    <div id="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+    </div>
+
     <div class="row mb-4">
         <div class="col-12 text-center">
             <img src="{{ url_for('static', filename='images/book-icon.png') }}" alt="Knowledge Base Icon" width="100">
@@ -16,16 +21,6 @@
             <p class="lead">Manage your knowledge base topics and articles here. Create new topics, organize existing ones, and keep your knowledge base up to date.</p>
         </div>
     </div>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}" role="alert">
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
 
     <div class="row">
         <!-- Left Column: Create New Topic -->
@@ -67,11 +62,7 @@
                                 <span class="badge bg-primary rounded-pill me-2">{{ topic.articles|length }} / {{ max_articles }} articles</span>
                                 <div>
                                     <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ topic.id }}">Edit</button>
-                                    <form action="{{ url_for('admin') }}" method="POST" class="d-inline">
-                                        <input type="hidden" name="action" value="delete">
-                                        <input type="hidden" name="topic_id" value="{{ topic.id }}">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this topic?')">Delete</button>
-                                    </form>
+                                    <button class="btn btn-sm btn-outline-danger delete-topic" data-topic-id="{{ topic.id }}" data-article-count="{{ topic.articles|length }}">Delete</button>
                                 </div>
                             </li>
 
@@ -141,6 +132,70 @@ $(document).ready(function() {
             });
         },
     });
+
+    // Function to add a new flash message
+    function addFlashMessage(message, category) {
+        var alertClass = category === 'success' ? 'alert-success' : 'alert-danger';
+        var flashMessage = $('<div class="alert ' + alertClass + ' alert-dismissible fade show" role="alert">' +
+                             message +
+                             '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
+                             '</div>');
+        $('#flash-messages').append(flashMessage);
+        
+        // Fade out and remove the message after 5 seconds
+        setTimeout(function() {
+            flashMessage.fadeOut('slow', function() {
+                $(this).remove();
+            });
+        }, 5000);
+    }
+
+    // Delete topic confirmation
+    $('.delete-topic').on('click', function() {
+        var topicId = $(this).data('topic-id');
+        var articleCount = $(this).data('article-count');
+        
+        if (articleCount > 0) {
+            // Topic contains articles, ask user to type "delete"
+            var confirmationMessage = `This topic contains ${articleCount} articles. Type "delete" to confirm deletion:`;
+            var userInput = prompt(confirmationMessage);
+            
+            if (userInput && userInput.toLowerCase() === 'delete') {
+                deleteTopic(topicId, userInput);
+            } else {
+                addFlashMessage('Deletion cancelled. You must type "delete" to confirm.', 'error');
+            }
+        } else {
+            // Topic has no articles, show simple confirmation
+            if (confirm('Are you sure you want to delete this topic?')) {
+                deleteTopic(topicId, 'confirmed');
+            }
+        }
+    });
+
+    function deleteTopic(topicId, confirmation) {
+        $.post('{{ url_for("admin") }}', { 
+            action: 'delete', 
+            topic_id: topicId, 
+            confirmation: confirmation 
+        }, function(response) {
+            if (response.status === 'success') {
+                addFlashMessage(response.message, 'success');
+                $('li[data-id="' + topicId + '"]').remove();
+            } else {
+                addFlashMessage(response.message, 'error');
+            }
+        }).fail(function() {
+            addFlashMessage('An error occurred while deleting the topic. Please try again.', 'error');
+        });
+    }
+
+    // Fade out existing flash messages after 5 seconds
+    setTimeout(function() {
+        $('.alert').fadeOut('slow', function() {
+            $(this).remove();
+        });
+    }, 5000);
 });
 </script>
 {% endblock %}

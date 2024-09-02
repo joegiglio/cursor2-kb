@@ -99,11 +99,20 @@ def admin():
             topic_id = request.form.get('topic_id')
             topic = Topic.query.get(topic_id)
             if topic:
+                # Check if the topic has articles
+                if topic.articles:
+                    # Check if the user typed "delete" (case-insensitive)
+                    confirmation = request.form.get('confirmation', '').strip().lower()
+                    if confirmation != 'delete':
+                        return jsonify({'status': 'error', 'message': 'You must type "delete" to confirm deletion of a topic with articles.'})
+                # Delete all articles associated with the topic
+                for article in topic.articles:
+                    db.session.delete(article)
                 db.session.delete(topic)
                 db.session.commit()
-                flash('Topic deleted successfully.', 'success')
+                return jsonify({'status': 'success', 'message': 'Topic and associated articles deleted successfully.'})
             else:
-                flash('Topic not found.', 'error')
+                return jsonify({'status': 'error', 'message': 'Topic not found.'})
         return redirect(url_for('admin'))
 
     topics = Topic.query.order_by(Topic.sort_order).all()
