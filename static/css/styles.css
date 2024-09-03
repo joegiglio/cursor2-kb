@@ -1,0 +1,65 @@
+.ui-sortable-helper {
+    opacity: 0.8;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.sortable li, .sortable-articles li {
+    transition: all 0.5s ease;
+    background-color: transparent;
+    text-align: left !important;
+    display: flex;
+    align-items: center;
+}
+
+.sortable li:hover, .sortable-articles li:hover {
+    cursor: move;
+}
+
+/* Ensure left alignment for article titles */
+.sortable-articles li,
+.sortable-articles li h3,
+.sortable-articles li h4,
+.sortable-articles li h5,
+.sortable-articles li h6 {
+    text-align: left !important;
+}
+
+/* Style for the article title */
+.article-title {
+    flex-grow: 1;
+    text-align: left !important;
+    padding-left: 10px;
+}
+
+/* Style for the handle */
+.handle {
+    cursor: move;
+    padding-right: 10px;
+}
+
+/* Style for the action buttons */
+.article-actions {
+    margin-left: auto;
+}
+
+/* Override any Bootstrap or other CSS that might be centering text */
+.text-center {
+    text-align: left !important;
+}
+
+@keyframes highlight {
+    0% { transform: scale(1); background-color: yellow; }
+    50% { transform: scale(1.05); background-color: yellow; }
+    100% { transform: scale(1); background-color: transparent; }
+}
+
+.highlight-animation {
+    animation: highlight 1s ease;
+}
+
+.handle, .sortable li, .sortable-articles li {
+    cursor: move;
+    cursor: -webkit-grabbing;
+    cursor: -moz-grabbing;
+    cursor: grabbing;
+}

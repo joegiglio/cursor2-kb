@@ -170,12 +170,16 @@ def delete_article(topic_id, article_id):
 
 @app.route('/update_sort_order', methods=['POST'])
 def update_sort_order():
+    print("Update sort order route hit")
     new_order = request.json['new_order']
+    print("Received new order:", new_order)
     for index, topic_id in enumerate(new_order, start=1):
         topic = Topic.query.get(topic_id)
         if topic:
             topic.sort_order = index
+            print(f"Updated topic {topic_id} to order {index}")
     db.session.commit()
+    print("Sort order update completed")
     return jsonify({'status': 'success'})
 
 @app.route('/login')
@@ -184,12 +188,16 @@ def login():
 
 @app.route('/admin/topic/<int:topic_id>/update_article_sort_order', methods=['POST'])
 def update_article_sort_order(topic_id):
+    print(f"Update article sort order route hit for topic {topic_id}")
     new_order = request.json['new_order']
+    print("Received new article order:", new_order)
     for index, article_id in enumerate(new_order, start=1):
         article = Article.query.get(article_id)
         if article and article.topic_id == topic_id:
             article.sort_order = index
+            print(f"Updated article {article_id} to order {index}")
     db.session.commit()
+    print("Article sort order update completed")
     return jsonify({'status': 'success'})
 
 @app.route('/upload_image', methods=['POST'])
