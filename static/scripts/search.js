@@ -4,6 +4,7 @@ $(document).ready(function() {
     const searchResults = $('#search-results');
     const resultsList = $('#results-list');
     const topicsContainer = $('#topics-container');
+    const searchError = $('#search-error');
 
     searchButton.on('click', performSearch);
     searchInput.on('keypress', function(e) {
@@ -12,9 +13,16 @@ $(document).ready(function() {
         }
     });
 
+    searchInput.on('input', function() {
+        searchError.hide();
+    });
+
     function performSearch() {
         const query = searchInput.val().trim();
-        if (query.length === 0) return;
+        if (!isValidSearchQuery(query)) {
+            showError('Please enter at least 3 characters for your search query.');
+            return;
+        }
 
         $.ajax({
             url: '/search',
@@ -24,9 +32,21 @@ $(document).ready(function() {
                 displayResults(response.results);
             },
             error: function(xhr, status, error) {
-                alert('An error occurred while searching. Please try again.');
+                showError('An error occurred while searching. Please try again.');
             }
         });
+    }
+
+    function isValidSearchQuery(query) {
+        // Allow letters (including international characters), numbers, and spaces
+        const validQueryRegex = /^[\p{L}\p{N}\s]{3,}$/u;
+        return validQueryRegex.test(query);
+    }
+
+    function showError(message) {
+        searchError.text(message).show();
+        searchResults.hide();
+        topicsContainer.show();
     }
 
     function displayResults(results) {
@@ -44,6 +64,7 @@ $(document).ready(function() {
                 resultsList.append(resultItem);
             });
         }
+        searchError.hide();
         searchResults.show();
         topicsContainer.hide();
     }

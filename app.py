@@ -6,6 +6,8 @@ import bleach
 import os
 from werkzeug.utils import secure_filename
 from sqlalchemy.orm import joinedload
+import re
+import unicodedata
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///topics.db'
@@ -62,8 +64,8 @@ def knowledge_base():
 @app.route('/search')
 def search():
     query = request.args.get('query', '').strip()
-    if not query:
-        return jsonify({'results': []})
+    if not is_valid_search_query(query):
+        return jsonify({'results': [], 'error': 'Invalid search query'})
 
     # Search for articles matching the query in title or content
     articles = Article.query.filter(
@@ -84,6 +86,10 @@ def search():
         })
 
     return jsonify({'results': results})
+
+def is_valid_search_query(query):
+    # Allow letters (including international characters), numbers, and spaces
+    return bool(re.match(r'^[\w\s]{3,}$', query, re.UNICODE))
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
