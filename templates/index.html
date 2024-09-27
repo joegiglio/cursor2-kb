@@ -1,5 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Welcome to the Knowledge Base Help Desk</h1>
+<h10Welcome to the Knowledge Base Help Desk</h1>
 <p>Select an option from the navigation bar above.</p>
+
+<form id="search-form" class="mt-4">
+    <div class="input-group">
+        <input type="text" id="search-input" class="form-control" placeholder="Search articles..." maxlength="100" required>
+        <div class="input-group-append">
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+    </div>
+</form>
+
+<div id="search-results" class="mt-4"></div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='scripts/search.js') }}"></script>
 {% endblock %}

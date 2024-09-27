@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Search Results for "{{ query }}"</h1>
+{% if articles %}
+    <ul>
+    {% for article in articles %}
+        <li><a href="{{ url_for('view_article', topic_id=article.topic_id, article_id=article.id) }}">{{ article.title }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No results found.</p>
+{% endif %}
+{% endblock %}

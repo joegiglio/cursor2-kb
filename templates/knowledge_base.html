@@ -3,18 +3,28 @@
 <div class="container mt-4">
     <h1 class="text-center mb-4">Knowledge Base</h1>
     
-    <!-- Search Bar (Placeholder) -->
+    <!-- Search Bar -->
     <div class="row mb-4">
         <div class="col-md-8 offset-md-2">
             <div class="input-group">
-                <input type="text" class="form-control" placeholder="Search the knowledge base (Coming soon!)" disabled>
-                <button class="btn btn-primary" type="button" disabled>Search</button>
+                <input type="text" id="search-input" class="form-control" placeholder="Search the knowledge base">
+                <button class="btn btn-primary" type="button" id="search-button">Search</button>
             </div>
         </div>
     </div>
 
+    <!-- Search Results -->
+    <div id="search-results" class="row mb-4" style="display: none;">
+        <div class="col-md-8 offset-md-2">
+            <h3>Search Results</h3>
+            <ul id="results-list" class="list-group">
+                <!-- Search results will be dynamically inserted here -->
+            </ul>
+        </div>
+    </div>
+
     <!-- Topics and Articles -->
-    <div class="row">
+    <div id="topics-container" class="row">
         {% for topic in topics %}
         <div class="col-md-6 mb-4">
             <div class="card">
@@ -56,4 +66,8 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='scripts/search.js') }}"></script>
 {% endblock %}

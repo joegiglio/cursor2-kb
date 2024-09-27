@@ -1,0 +1,70 @@
+/* Common styles for sortable tables */
+.sortable-handle {
+  cursor: move;
+  cursor: -webkit-grabbing;
+}
+
+.sortable-handle:active {
+  cursor: grabbing;
+}
+
+/* Remove any conflicting styles */
+.sortable-table td,
+.sortable-table th {
+  vertical-align: middle !important;
+}
+
+/* Ensure the topic name takes up remaining space */
+.topic-name {
+  min-width: 0;
+}
+
+/* Styles for sortable tables */
+.sortable-table .sortable-handle {
+  cursor: move;
+  cursor: -webkit-grabbing;
+}
+
+.sortable-table td {
+  padding: 8px;
+  vertical-align: middle;
+}
+
+/* Ensure text alignment */
+.sortable-table td:not(.sortable-handle) {
+  text-align: left;
+}
+
+.sortable-table .sortable-handle {
+  text-align: center;
+}
+
+/* Additional styles to match /admin page if needed */
+.table-sm td {
+  padding: 0.3rem;
+}
+
+.sortable-table {
+  width: 100%;
+}
+
+.sortable-table th,
+.sortable-table td {
+  vertical-align: middle !important;
+}
+
+.sortable-table .sortable-handle {
+  width: 40px;
+  text-align: center;
+}
+
+.table-sm td, .table-sm th {
+  padding: 0.3rem;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  border-radius: 0.2rem;
+}

@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from sqlalchemy import func
+from sqlalchemy import func, or_
 import bleach
 import os
 from werkzeug.utils import secure_filename
@@ -51,12 +51,39 @@ class Article(db.Model):
 
 @app.route('/')
 def index():
-    return render_template('index.html', active_page='home')
+    topics = Topic.query.options(joinedload(Topic.articles)).order_by(Topic.sort_order).all()
+    return render_template('knowledge_base.html', active_page='knowledge_base', topics=topics)
 
 @app.route('/knowledge-base')
 def knowledge_base():
     topics = Topic.query.options(joinedload(Topic.articles)).order_by(Topic.sort_order).all()
     return render_template('knowledge_base.html', active_page='knowledge_base', topics=topics)
+
+@app.route('/search')
+def search():
+    query = request.args.get('query', '').strip()
+    if not query:
+        return jsonify({'results': []})
+
+    # Search for articles matching the query in title or content
+    articles = Article.query.filter(
+        or_(
+            Article.title.ilike(f'%{query}%'),
+            Article.content.ilike(f'%{query}%')
+        )
+    ).all()
+
+    results = []
+    for article in articles:
+        snippet = article.content[:200] + '...' if len(article.content) > 200 else article.content
+        results.append({
+            'id': article.id,
+            'title': article.title,
+            'snippet': snippet,
+            'topic_id': article.topic_id
+        })
+
+    return jsonify({'results': results})
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
