@@ -11,6 +11,7 @@ import unicodedata
 from faker import Faker
 import random
 import requests
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///topics.db'
@@ -68,8 +69,11 @@ def knowledge_base():
 @app.route('/search')
 def search():
     query = request.args.get('query', '').strip()
+    page = int(request.args.get('page', 1))
+    per_page = 10
+
     if not is_valid_search_query(query):
-        return jsonify({'results': [], 'error': 'Invalid search query'})
+        return jsonify({'results': [], 'total_pages': 0, 'current_page': page, 'total_results': 0})
 
     # Search for articles matching the query in title, content, or keywords
     articles = Article.query.filter(
@@ -78,19 +82,31 @@ def search():
             Article.content.ilike(f'%{query}%'),
             Article.keywords.ilike(f'%{query}%')
         )
-    ).all()
+    )
+
+    total_results = articles.count()
+    articles = articles.paginate(page=page, per_page=per_page, error_out=False)
 
     results = []
-    for article in articles:
-        snippet = article.content[:200] + '...' if len(article.content) > 200 else article.content
+    for article in articles.items:
+        # Remove HTML tags and get a plain text blurb
+        soup = BeautifulSoup(article.content, 'html.parser')
+        text_content = soup.get_text()
+        blurb = re.sub(r'\s+', ' ', text_content)[:200] + '...'
+
         results.append({
             'id': article.id,
             'title': article.title,
-            'snippet': snippet,
+            'blurb': blurb,
             'topic_id': article.topic_id
         })
 
-    return jsonify({'results': results})
+    return jsonify({
+        'results': results,
+        'total_pages': articles.pages,
+        'current_page': page,
+        'total_results': total_results
+    })
 
 def is_valid_search_query(query):
     # Allow letters (including international characters), numbers, and spaces
