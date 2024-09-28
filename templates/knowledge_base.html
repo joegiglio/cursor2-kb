@@ -30,7 +30,10 @@
         <div class="col-md-6 mb-4">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">{{ topic.name }}</h5>
+                    <h5 class="card-title mb-0">
+                        {{ topic.name }} 
+                        <small>({{ topic.articles|length }} article{{ 's' if topic.articles|length != 1 else '' }})</small>
+                    </h5>
                 </div>
                 <div class="card-body">
                     {% if topic.articles %}
