@@ -45,6 +45,7 @@ class Article(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
+    keywords = db.Column(db.String(200))  # New field for keywords
     topic_id = db.Column(db.Integer, db.ForeignKey('topic.id'), nullable=False)
     sort_order = db.Column(db.Integer, nullable=False)
 
@@ -67,11 +68,12 @@ def search():
     if not is_valid_search_query(query):
         return jsonify({'results': [], 'error': 'Invalid search query'})
 
-    # Search for articles matching the query in title or content
+    # Search for articles matching the query in title, content, or keywords
     articles = Article.query.filter(
         or_(
             Article.title.ilike(f'%{query}%'),
-            Article.content.ilike(f'%{query}%')
+            Article.content.ilike(f'%{query}%'),
+            Article.keywords.ilike(f'%{query}%')
         )
     ).all()
 
@@ -167,11 +169,17 @@ def new_article(topic_id):
         else:
             title = request.form.get('title')
             content = request.form.get('content')
+            keywords = request.form.get('keywords')
+            
+            # Process keywords
+            keyword_list = [k.strip() for k in keywords.split(',') if len(k.strip()) >= 3]
+            processed_keywords = ', '.join(keyword_list)
+
             # Use a more permissive bleach cleaning
             content = bleach.clean(content, tags=['p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li', 'a', 'img', 'h1', 'h2', 'h3', 'blockquote', 'pre', 'code'],
                                    attributes={'a': ['href', 'target'], 'img': ['src', 'alt']})
             max_sort_order = db.session.query(func.max(Article.sort_order)).filter_by(topic_id=topic_id).scalar() or 0
-            new_article = Article(title=title, content=content, topic_id=topic_id, sort_order=max_sort_order + 1)
+            new_article = Article(title=title, content=content, keywords=processed_keywords, topic_id=topic_id, sort_order=max_sort_order + 1)
             db.session.add(new_article)
             db.session.commit()
             flash('Article created successfully.', 'success')
@@ -185,6 +193,12 @@ def edit_article(topic_id, article_id):
     if request.method == 'POST':
         article.title = request.form.get('title')
         content = request.form.get('content')
+        keywords = request.form.get('keywords')
+        
+        # Process keywords
+        keyword_list = [k.strip() for k in keywords.split(',') if len(k.strip()) >= 3]
+        article.keywords = ', '.join(keyword_list)
+
         # Use a more permissive bleach cleaning
         article.content = bleach.clean(content, tags=['p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li', 'a', 'img', 'h1', 'h2', 'h3', 'blockquote', 'pre', 'code'],
                                        attributes={'a': ['href', 'target'], 'img': ['src', 'alt']})
