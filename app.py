@@ -8,6 +8,9 @@ from werkzeug.utils import secure_filename
 from sqlalchemy.orm import joinedload
 import re
 import unicodedata
+from faker import Faker
+import random
+import requests
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///topics.db'
@@ -201,7 +204,7 @@ def edit_article(topic_id, article_id):
 
         # Use a more permissive bleach cleaning
         article.content = bleach.clean(content, tags=['p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li', 'a', 'img', 'h1', 'h2', 'h3', 'blockquote', 'pre', 'code'],
-                                       attributes={'a': ['href', 'target'], 'img': ['src', 'alt']})
+                                       attributes={'a': ['href', 'target'], 'img': ['src', 'alt', 'style']})
         db.session.commit()
         flash('Article updated successfully.', 'success')
         return redirect(url_for('admin_topic', topic_id=topic_id))
@@ -269,6 +272,74 @@ def view_article(topic_id, article_id):
     topic = Topic.query.get_or_404(topic_id)
     article = Article.query.get_or_404(article_id)
     return render_template('view_article.html', topic=topic, article=article)
+
+@app.route('/generate_content', methods=['GET', 'POST'])
+def generate_content():
+    if request.method == 'POST':
+        num_topics = int(request.form.get('num_topics', 1))
+        num_articles = int(request.form.get('num_articles', 1))
+        image_percentage = int(request.form.get('image_percentage', 0))
+        use_foreign_chars = request.form.get('use_foreign_chars') == 'on'
+        
+        fake = Faker(['en_US', 'ja_JP', 'ru_RU']) if use_foreign_chars else Faker(['en_US'])
+        
+        for _ in range(num_topics):
+            topic_name = fake.word().capitalize()
+            max_sort_order = db.session.query(func.max(Topic.sort_order)).scalar() or 0
+            new_topic = Topic(name=topic_name, sort_order=max_sort_order + 1)
+            db.session.add(new_topic)
+            db.session.flush()  # This assigns an ID to the new topic
+            
+            for _ in range(num_articles):
+                title = fake.sentence(nb_words=4)
+                content_paragraphs = fake.paragraphs(nb=random.randint(3, 10))
+                
+                content = '<p>' + '</p><p>'.join(content_paragraphs) + '</p>'
+                
+                if random.random() < image_percentage / 100:  # Use the specified percentage
+                    image_url = add_random_image()
+                    if image_url:
+                        content += f'<p><img src="{image_url}" alt="Random Image" style="max-width: 100%; height: auto;"></p>'
+                
+                keywords = ', '.join(fake.words(nb=random.randint(3, 8)))
+                
+                max_article_sort_order = db.session.query(func.max(Article.sort_order)).filter_by(topic_id=new_topic.id).scalar() or 0
+                new_article = Article(
+                    title=title[:100],  # Limit title to 100 characters
+                    content=content,
+                    keywords=keywords,
+                    topic_id=new_topic.id,
+                    sort_order=max_article_sort_order + 1
+                )
+                db.session.add(new_article)
+        
+        db.session.commit()
+        flash(f'Generated {num_topics} topics with {num_articles} articles each. {image_percentage}% of articles have images.', 'success')
+        return redirect(url_for('generate_content'))
+    
+    return render_template('generate_content.html', active_page='generate_content')
+
+def add_random_image():
+    width = random.randint(300, 800)
+    height = random.randint(200, 600)
+    image_url = f'https://picsum.photos/{width}/{height}'
+    
+    try:
+        response = requests.get(image_url, stream=True)
+        if response.status_code == 200:
+            file_extension = response.headers.get('content-type', '').split('/')[-1]
+            filename = secure_filename(f'random_image_{random.randint(1000, 9999)}.{file_extension}')
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            
+            with open(file_path, 'wb') as f:
+                for chunk in response.iter_content(8192):
+                    f.write(chunk)
+            
+            return url_for('static', filename=f'uploads/{filename}')
+    except Exception as e:
+        print(f"Error downloading image: {e}")
+    
+    return None
 
 if __name__ == '__main__':
     app.run(debug=True)

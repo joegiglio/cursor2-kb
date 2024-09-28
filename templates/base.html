@@ -32,6 +32,9 @@
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'login' %}active{% endif %}" href="{{ url_for('login') }}">Login</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'generate_content' %}active{% endif %}" href="{{ url_for('generate_content') }}">Generate Content</a>
+                    </li>
                 </ul>
             </div>
         </div>

@@ -1,16 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-4">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('knowledge_base') }}">Knowledge Base</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ topic.name }}</li>
-        </ol>
-    </nav>
     <h1>{{ article.title }}</h1>
-    <div class="mt-4">
+    <div class="article-content">
         {{ article.content|safe }}
     </div>
-    <a href="{{ url_for('knowledge_base') }}" class="btn btn-primary mt-4">Back to Knowledge Base</a>
+    {% if article.keywords %}
+    <div class="mt-4">
+        <h5>Keywords:</h5>
+        <p>{{ article.keywords }}</p>
+    </div>
+    {% endif %}
 </div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .article-content img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 1em 0;
+    }
+</style>
 {% endblock %}
