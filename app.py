@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from sqlalchemy import func, or_
@@ -356,6 +356,18 @@ def add_random_image():
         print(f"Error downloading image: {e}")
     
     return None
+
+@app.route('/settings', methods=['GET', 'POST'])
+def settings():
+    if request.method == 'POST':
+        theme = request.form.get('theme', 'light')
+        resp = make_response(redirect(url_for('settings')))
+        resp.set_cookie('theme', theme, max_age=30*24*60*60)  # Cookie expires in 30 days
+        flash('Settings updated successfully.', 'success')
+        return resp
+    
+    current_theme = request.cookies.get('theme', 'light')
+    return render_template('settings.html', active_page='settings', current_theme=current_theme)
 
 if __name__ == '__main__':
     app.run(debug=True)

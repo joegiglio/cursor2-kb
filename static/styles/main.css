@@ -1,0 +1,288 @@
+body {
+    padding-top: 60px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark-mode {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+}
+
+.dark-mode .navbar {
+    background-color: #2c2c2c !important;
+}
+
+.dark-mode .navbar-light .navbar-brand,
+.dark-mode .navbar-light .navbar-nav .nav-link {
+    color: #e0e0e0;
+}
+
+.dark-mode .navbar-light .navbar-nav .nav-link.active {
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.dark-mode .card {
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+.dark-mode .card-header {
+    background-color: #3a3a3a;
+    border-bottom-color: #444;
+}
+
+.dark-mode .list-group-item {
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+.dark-mode .btn-primary {
+    background-color: #0056b3;
+    border-color: #004085;
+    color: #ffffff; /* Ensure text is bright white */
+}
+
+.dark-mode .btn-primary:hover {
+    background-color: #003d80;
+    border-color: #002752;
+    color: #ffffff; /* Keep text white on hover */
+}
+
+.dark-mode .form-control,
+.dark-mode .form-select {
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+.dark-mode .form-control:focus,
+.dark-mode .form-select:focus {
+    background-color: #3a3a3a;
+    color: #ffffff;
+    border-color: #0056b3;
+}
+
+/* Placeholder text color */
+.dark-mode .form-control::placeholder {
+    color: #ffffff;
+    opacity: 0.7;
+}
+
+.dark-mode .text-muted {
+    color: #a0a0a0 !important;
+}
+
+.dark-mode a {
+    color: #5b9dd9;
+}
+
+.dark-mode a:hover {
+    color: #7cb3e6;
+}
+
+/* Underlined hyperlink color */
+.dark-mode a:not(.btn) {
+    text-decoration-color: #7cb3e6;
+}
+
+.dark-mode .table {
+    color: #e0e0e0;
+}
+
+.dark-mode .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .table-hover tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .pagination .page-link {
+    background-color: #2c2c2c;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+.dark-mode .pagination .page-item.active .page-link {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.dark-mode .alert-success {
+    background-color: #1e4620;
+    border-color: #2a6327;
+    color: #c3e6cb;
+}
+
+.dark-mode .alert-danger {
+    background-color: #5c1f1f;
+    border-color: #7c2626;
+    color: #f8d7da;
+}
+
+/* Search results */
+.dark-mode #search-results,
+.dark-mode #search-results .list-group-item {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+}
+
+.dark-mode #search-results h3 {
+    color: #ffffff;
+}
+
+.dark-mode #search-results .list-group-item {
+    background-color: #2c2c2c;
+    border-color: #444;
+    margin-bottom: 5px;
+}
+
+.dark-mode #search-results .list-group-item:nth-child(even) {
+    background-color: #333333;
+}
+
+.dark-mode #search-results .list-group-item h5 a {
+    color: #5b9dd9;
+}
+
+.dark-mode #search-results .list-group-item p {
+    color: #cccccc;
+}
+
+/* Quill editor in dark mode */
+.dark-mode .ql-toolbar.ql-snow {
+    border-color: #444;
+    background-color: #2c2c2c;
+}
+
+.dark-mode .ql-toolbar.ql-snow .ql-picker-label,
+.dark-mode .ql-toolbar.ql-snow .ql-picker-options {
+    background-color: #2c2c2c;
+    color: #cccccc;
+}
+
+.dark-mode .ql-toolbar.ql-snow .ql-stroke {
+    stroke: #cccccc;
+}
+
+.dark-mode .ql-toolbar.ql-snow .ql-fill {
+    fill: #cccccc;
+}
+
+.dark-mode .ql-container.ql-snow {
+    border-color: #444;
+}
+
+.dark-mode .ql-editor {
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+}
+
+/* Additional styles for search results */
+.dark-mode #search-results {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+}
+
+.dark-mode #search-results h3 {
+    color: #ffffff;
+}
+
+.dark-mode #results-list .list-group-item {
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+.dark-mode #results-list .list-group-item:nth-child(even) {
+    background-color: #333333;
+}
+
+.dark-mode #results-list .list-group-item h5 a {
+    color: #5b9dd9;
+}
+
+.dark-mode #results-list .list-group-item p {
+    color: #cccccc;
+}
+
+/* Override any Bootstrap styles that might be interfering */
+.dark-mode .list-group-item {
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+/* Ensure pagination in dark mode is styled correctly */
+.dark-mode #search-results .pagination .page-link {
+    background-color: #2c2c2c;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+.dark-mode #search-results .pagination .page-item.active .page-link {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+/* Style for modal dialogs in dark mode */
+.dark-mode .modal-content {
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+.dark-mode .modal-header {
+    border-bottom-color: #444;
+}
+
+.dark-mode .modal-footer {
+    border-top-color: #444;
+}
+
+.dark-mode .close {
+    color: #e0e0e0;
+}
+
+.dark-mode .modal-title {
+    color: #ffffff;
+}
+
+/* Ensure form inputs in modals are styled correctly */
+.dark-mode .modal-body .form-control {
+    background-color: #333;
+    color: #e0e0e0;
+    border-color: #555;
+}
+
+.dark-mode .modal-body .form-control:focus {
+    background-color: #3a3a3a;
+    color: #ffffff;
+    border-color: #0056b3;
+}
+
+/* Style for modal buttons */
+.dark-mode .modal-footer .btn-secondary {
+    background-color: #4a4a4a;
+    border-color: #5a5a5a;
+    color: #ffffff;
+}
+
+.dark-mode .modal-footer .btn-secondary:hover {
+    background-color: #5a5a5a;
+    border-color: #6a6a6a;
+}
+
+.dark-mode .modal-footer .btn-primary {
+    background-color: #0056b3;
+    border-color: #004085;
+    color: #ffffff;
+}
+
+.dark-mode .modal-footer .btn-primary:hover {
+    background-color: #003d80;
+    border-color: #002752;
+}

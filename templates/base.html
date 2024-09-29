@@ -5,14 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Knowledge Base Help Desk</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='styles/main.css') }}" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-        body {
-            padding-top: 60px;
-        }
-    </style>
 </head>
-<body>
+<body class="{{ 'dark-mode' if request.cookies.get('theme') == 'dark' else '' }}">
     <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
         <div class="container">
             <a class="navbar-brand" href="/">Help Desk</a>
@@ -35,6 +31,9 @@
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'generate_content' %}active{% endif %}" href="{{ url_for('generate_content') }}">Generate Content</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'settings' %}active{% endif %}" href="{{ url_for('settings') }}">Settings</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -47,5 +46,45 @@
     {% block scripts %}{% endblock %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        function setCookie(name, value, days) {
+            var expires = "";
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime() + (days*24*60*60*1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(';');
+            for(var i=0;i < ca.length;i++) {
+                var c = ca[i];
+                while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+            }
+            return null;
+        }
+
+        // Apply theme on page load
+        var theme = getCookie('theme') || 'light';
+        $('body').toggleClass('dark-mode', theme === 'dark');
+
+        // Update theme when cookie changes
+        var cookieObserver = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === "attributes" && mutation.attributeName === "cookie") {
+                    var theme = getCookie('theme') || 'light';
+                    $('body').toggleClass('dark-mode', theme === 'dark');
+                }
+            });
+        });
+
+        cookieObserver.observe(document, { attributes: true, attributeFilter: ['cookie'] });
+    });
+    </script>
 </body>
 </html>

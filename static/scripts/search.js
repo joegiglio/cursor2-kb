@@ -66,16 +66,15 @@ $(document).ready(function() {
     }
 
     function displayResults(results, totalResults) {
-        console.log('Displaying results. Total results:', totalResults); // Debug log
         resultsList.empty();
         if (results.length === 0) {
             resultsList.append('<li class="list-group-item">No results found.</li>');
             searchResultsTitle.text('Search Results (0 articles)');
         } else {
             searchResultsTitle.text(`Search Results (${totalResults} article${totalResults !== 1 ? 's' : ''})`);
-            results.forEach(function(result, index) {
+            results.forEach(function(result) {
                 const resultItem = `
-                    <li class="list-group-item ${index % 2 === 0 ? 'bg-light' : ''}" style="background-color: ${index % 2 === 0 ? '#f0f0f0' : '#ffffff'};">
+                    <li class="list-group-item">
                         <h5><a href="/knowledge-base/topic/${result.topic_id}/article/${result.id}">${result.title}</a></h5>
                         <p>${result.blurb}</p>
                     </li>
