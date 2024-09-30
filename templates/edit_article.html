@@ -30,15 +30,22 @@ $(document).ready(function() {
         modules: {
             toolbar: [
                 [{ 'header': [1, 2, 3, false] }],
-                ['bold', 'italic', 'underline'],
+                ['bold', 'italic', 'underline', 'strike'],
+                ['blockquote', 'code-block'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'script': 'sub'}, { 'script': 'super' }],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],
+                [{ 'direction': 'rtl' }],
+                [{ 'size': ['small', false, 'large', 'huge'] }],
+                [{ 'align': ['', 'center', 'right', 'justify'] }],
                 ['link', 'image'],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }]
+                ['clean']
             ]
         }
     });
 
     // Set the initial content
-    quill.root.innerHTML = {{ article.content|tojson|safe }};
+    quill.setContents(JSON.parse({{ article.content|tojson|safe }}));
 
     quill.getModule('toolbar').addHandler('image', function() {
         selectLocalImage();
@@ -83,8 +90,15 @@ $(document).ready(function() {
     }
 
     $('form').submit(function() {
-        $('#content').val(quill.root.innerHTML);
+        $('#content').val(JSON.stringify(quill.getContents()));
     });
 });
 </script>
+
+<style>
+#editor {
+    font-size: 16px;
+    line-height: 1.5;
+}
+</style>
 {% endblock %}

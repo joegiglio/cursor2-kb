@@ -1,24 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>New Article for {{ topic.name }}</h1>
-
-<form action="{{ url_for('new_article', topic_id=topic.id) }}" method="POST">
-    <div class="mb-3">
-        <label for="title" class="form-label">Title</label>
-        <input type="text" class="form-control" id="title" name="title" required maxlength="100">
-    </div>
-    <div class="mb-3">
-        <label for="content" class="form-label">Content</label>
-        <div id="editor" style="height: 300px;"></div>
-        <input type="hidden" name="content" id="content">
-    </div>
-    <div class="mb-3">
-        <label for="keywords" class="form-label">Keywords (comma-separated)</label>
-        <input type="text" class="form-control" id="keywords" name="keywords">
-        <small class="form-text text-muted">Enter keywords separated by commas. Each keyword must be at least 3 characters long.</small>
-    </div>
-    <button type="submit" class="btn btn-primary">Create Article</button>
-</form>
+<div class="container mt-4">
+    <h1>New Article for {{ topic.name }}</h1>
+    <form action="{{ url_for('new_article', topic_id=topic.id) }}" method="POST">
+        <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" class="form-control" id="title" name="title" required maxlength="100">
+        </div>
+        <div class="mb-3">
+            <label for="content" class="form-label">Content</label>
+            <div id="editor" style="height: 300px;"></div>
+            <input type="hidden" name="content" id="content">
+        </div>
+        <div class="mb-3">
+            <label for="keywords" class="form-label">Keywords (comma-separated)</label>
+            <input type="text" class="form-control" id="keywords" name="keywords">
+            <small class="form-text text-muted">Enter keywords separated by commas. Each keyword must be at least 3 characters long.</small>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Article</button>
+    </form>
+</div>
 
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
@@ -29,9 +30,16 @@ $(document).ready(function() {
         modules: {
             toolbar: [
                 [{ 'header': [1, 2, 3, false] }],
-                ['bold', 'italic', 'underline'],
+                ['bold', 'italic', 'underline', 'strike'],
+                ['blockquote', 'code-block'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'script': 'sub'}, { 'script': 'super' }],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],
+                [{ 'direction': 'rtl' }],
+                [{ 'size': ['small', false, 'large', 'huge'] }],
+                [{ 'align': ['', 'center', 'right', 'justify'] }],
                 ['link', 'image'],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }]
+                ['clean']
             ]
         }
     });
@@ -79,8 +87,15 @@ $(document).ready(function() {
     }
 
     $('form').submit(function() {
-        $('#content').val(quill.root.innerHTML);
+        $('#content').val(JSON.stringify(quill.getContents()));
     });
 });
 </script>
+
+<style>
+#editor {
+    font-size: 16px;
+    line-height: 1.5;
+}
+</style>
 {% endblock %}
