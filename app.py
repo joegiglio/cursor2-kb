@@ -12,6 +12,7 @@ from faker import Faker
 import random
 import requests
 from bs4 import BeautifulSoup
+import json
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///topics.db'
@@ -55,6 +56,12 @@ class Article(db.Model):
 
     def __repr__(self):
         return f'<Article {self.title}>'
+
+    def set_content(self, quill_content):
+        self.content = json.dumps(quill_content)
+    
+    def get_content(self):
+        return json.loads(self.content)
 
 @app.route('/')
 def index():
@@ -194,14 +201,19 @@ def new_article(topic_id):
             keyword_list = [k.strip() for k in keywords.split(',') if len(k.strip()) >= 3]
             processed_keywords = ', '.join(keyword_list)
 
-            # Use a more permissive bleach cleaning
-            content = bleach.clean(content, tags=['p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li', 'a', 'img', 'h1', 'h2', 'h3', 'blockquote', 'pre', 'code'],
-                                   attributes={'a': ['href', 'target'], 'img': ['src', 'alt']})
-            max_sort_order = db.session.query(func.max(Article.sort_order)).filter_by(topic_id=topic_id).scalar() or 0
-            new_article = Article(title=title, content=content, keywords=processed_keywords, topic_id=topic_id, sort_order=max_sort_order + 1)
-            db.session.add(new_article)
-            db.session.commit()
-            flash('Article created successfully.', 'success')
+            try:
+                # Parse the JSON content
+                quill_content = json.loads(content)
+                
+                max_sort_order = db.session.query(func.max(Article.sort_order)).filter_by(topic_id=topic_id).scalar() or 0
+                new_article = Article(title=title, keywords=processed_keywords, topic_id=topic_id, sort_order=max_sort_order + 1)
+                new_article.set_content(quill_content)
+                db.session.add(new_article)
+                db.session.commit()
+                flash('Article created successfully.', 'success')
+            except json.JSONDecodeError:
+                flash('Invalid article content. Please try again.', 'error')
+            
         return redirect(url_for('admin_topic', topic_id=topic_id))
     return render_template('new_article.html', active_page='admin', topic=topic)
 
@@ -219,8 +231,7 @@ def edit_article(topic_id, article_id):
         article.keywords = ', '.join(keyword_list)
 
         # Use a more permissive bleach cleaning
-        article.content = bleach.clean(content, tags=['p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li', 'a', 'img', 'h1', 'h2', 'h3', 'blockquote', 'pre', 'code'],
-                                       attributes={'a': ['href', 'target'], 'img': ['src', 'alt', 'style']})
+        article.set_content(json.loads(content))
         db.session.commit()
         flash('Article updated successfully.', 'success')
         return redirect(url_for('admin_topic', topic_id=topic_id))
