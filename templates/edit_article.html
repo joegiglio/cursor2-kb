@@ -23,6 +23,7 @@
 
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script src="{{ url_for('static', filename='scripts/quill-tooltips.js') }}"></script>
 <script>
 $(document).ready(function() {
     var toolbarOptions = [
@@ -52,59 +53,12 @@ $(document).ready(function() {
     });
 
     // Set the initial content
-    quill.setContents(JSON.parse({{ article.content|tojson|safe }}));
+    var content = {{ article.content|tojson|safe }};
+    if (content) {
+        quill.setContents(JSON.parse(content));
+    }
 
-    // Add tooltips
-    var tooltips = {
-        'header': 'Heading',
-        'bold': 'Bold',
-        'italic': 'Italic',
-        'underline': 'Underline',
-        'strike': 'Strikethrough',
-        'blockquote': 'Blockquote',
-        'code-block': 'Code Block',
-        'list': 'List',
-        'bullet': 'Bullet List',
-        'script': {
-            'sub': 'Subscript',
-            'super': 'Superscript'
-        },
-        'indent': {
-            '+1': 'Increase Indent',
-            '-1': 'Decrease Indent'
-        },
-        'direction': 'Text Direction',
-        'size': 'Font Size',
-        'align': {
-            '': 'Align Left',
-            'center': 'Align Center',
-            'right': 'Align Right',
-            'justify': 'Justify'
-        },
-        'link': 'Insert Link',
-        'image': 'Insert Image',
-        'clean': 'Clear Formatting'
-    };
-
-    $('.ql-toolbar button, .ql-toolbar select').each(function() {
-        var className = $(this).attr('class').split(/\s+/);
-        for (var i = 0; i < className.length; i++) {
-            if (className[i].indexOf('ql-') === 0) {
-                var format = className[i].slice(3);
-                var value = $(this).attr('value');
-                if (tooltips[format]) {
-                    if (typeof tooltips[format] === 'object') {
-                        $(this).attr('title', tooltips[format][value] || format);
-                    } else {
-                        $(this).attr('title', tooltips[format]);
-                    }
-                } else {
-                    $(this).attr('title', format);
-                }
-                break;
-            }
-        }
-    });
+    applyQuillTooltips();
 
     function selectLocalImage() {
         const input = $('<input type="file" accept="image/*">');
