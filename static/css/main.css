@@ -1,3 +1,9 @@
+/* Add this at the top of the file to ensure it applies globally */
+body {
+    font-size: 16px;
+    line-height: 1.5;
+}
+
 .article-content {
     font-size: 16px;
     line-height: 1.5;
@@ -83,4 +89,82 @@
     display: block;
     max-width: 100%;
     height: auto;
+}
+
+/* Ensure consistent font size for both article view and editor */
+.article-content,
+.ql-editor,
+#editor {
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+}
+
+/* Adjust heading sizes to be consistent */
+.article-content h1,
+.ql-editor h1 {
+    font-size: 2em !important;
+}
+
+.article-content h2,
+.ql-editor h2 {
+    font-size: 1.5em !important;
+}
+
+.article-content h3,
+.ql-editor h3 {
+    font-size: 1.17em !important;
+}
+
+/* Ensure consistent styling for other Quill elements */
+.article-content .ql-syntax,
+.ql-editor .ql-syntax {
+    background-color: #f0f0f0;
+    color: #000;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+/* Ensure consistent styling for other Quill elements */
+.article-content .ql-code-block-container,
+.ql-editor .ql-code-block-container {
+    background-color: #f0f0f0;
+    color: #000;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+/* Ensure Quill styles are applied consistently */
+.ql-editor p,
+.ql-editor ol,
+.ql-editor ul,
+.ql-editor pre,
+.ql-editor blockquote,
+.ql-editor h1,
+.ql-editor h2,
+.ql-editor h3,
+.ql-editor h4,
+.ql-editor h5,
+.ql-editor h6,
+.article-content p,
+.article-content ol,
+.article-content ul,
+.article-content pre,
+.article-content blockquote,
+.article-content h1,
+.article-content h2,
+.article-content h3,
+.article-content h4,
+.article-content h5,
+.article-content h6 {
+    margin-bottom: 1em !important;
+}
+
+/* Ensure consistent styling for other Quill elements */
+.article-content .ql-syntax,
+.ql-editor .ql-syntax {
+    background-color: #f0f0f0;
+    color: #000;
+    padding: 10px;
+    border-radius: 4px;
 }

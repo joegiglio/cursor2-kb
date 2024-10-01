@@ -9,7 +9,7 @@
         </div>
         <div class="mb-3">
             <label for="content" class="form-label">Content</label>
-            <div id="editor" style="height: 300px;"></div>
+            <div id="editor"></div>
             <input type="hidden" name="content" id="content">
         </div>
         <div class="mb-3">
@@ -25,27 +25,89 @@
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <script>
 $(document).ready(function() {
+    var toolbarOptions = [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        ['blockquote', 'code-block'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'script': 'sub'}, { 'script': 'super' }],
+        [{ 'indent': '-1'}, { 'indent': '+1' }],
+        [{ 'direction': 'rtl' }],
+        [{ 'size': ['small', false, 'large', 'huge'] }],
+        [{ 'align': ['', 'center', 'right', 'justify'] }],
+        ['link', 'image'],
+        ['clean']
+    ];
+
     var quill = new Quill('#editor', {
         theme: 'snow',
         modules: {
-            toolbar: [
-                [{ 'header': [1, 2, 3, false] }],
-                ['bold', 'italic', 'underline', 'strike'],
-                ['blockquote', 'code-block'],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                [{ 'script': 'sub'}, { 'script': 'super' }],
-                [{ 'indent': '-1'}, { 'indent': '+1' }],
-                [{ 'direction': 'rtl' }],
-                [{ 'size': ['small', false, 'large', 'huge'] }],
-                [{ 'align': ['', 'center', 'right', 'justify'] }],
-                ['link', 'image'],
-                ['clean']
-            ]
+            toolbar: {
+                container: toolbarOptions,
+                handlers: {
+                    image: selectLocalImage
+                }
+            }
         }
     });
 
-    quill.getModule('toolbar').addHandler('image', function() {
-        selectLocalImage();
+    // Add tooltips
+    var tooltips = {
+        'header': 'Heading',
+        'bold': 'Bold',
+        'italic': 'Italic',
+        'underline': 'Underline',
+        'strike': 'Strikethrough',
+        'blockquote': 'Blockquote',
+        'code-block': 'Code Block',
+        'list': 'List',
+        'bullet': 'Bullet List',
+        'script': {
+            'sub': 'Subscript',
+            'super': 'Superscript'
+        },
+        'indent': {
+            '+1': 'Increase Indent',
+            '-1': 'Decrease Indent'
+        },
+        'direction': 'Text Direction',
+        'size': 'Font Size',
+        'align': {
+            '': 'Align Left',
+            'center': 'Align Center',
+            'right': 'Align Right',
+            'justify': 'Justify'
+        },
+        'link': 'Insert Link',
+        'image': 'Insert Image',
+        'clean': 'Clear Formatting'
+    };
+
+    // Apply tooltips to all buttons except align
+    $('.ql-toolbar button:not(.ql-align), .ql-toolbar select').each(function() {
+        var className = $(this).attr('class').split(/\s+/);
+        for (var i = 0; i < className.length; i++) {
+            if (className[i].indexOf('ql-') === 0) {
+                var format = className[i].slice(3);
+                var value = $(this).attr('value');
+                if (tooltips[format]) {
+                    if (typeof tooltips[format] === 'object') {
+                        $(this).attr('title', tooltips[format][value] || format);
+                    } else {
+                        $(this).attr('title', tooltips[format]);
+                    }
+                } else {
+                    $(this).attr('title', format);
+                }
+                break;
+            }
+        }
+    });
+
+    // Apply tooltips to align buttons
+    $('.ql-align').each(function() {
+        var value = $(this).attr('value') || '';
+        $(this).attr('title', tooltips['align'][value]);
     });
 
     function selectLocalImage() {
@@ -96,6 +158,9 @@ $(document).ready(function() {
 #editor {
     font-size: 16px;
     line-height: 1.5;
+}
+.ql-editor {
+    min-height: 300px;
 }
 </style>
 {% endblock %}

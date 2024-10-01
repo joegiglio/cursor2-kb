@@ -298,7 +298,8 @@ def uploaded_file(filename):
 def view_article(topic_id, article_id):
     topic = Topic.query.get_or_404(topic_id)
     article = Article.query.get_or_404(article_id)
-    return render_template('view_article.html', topic=topic, article=article)
+    content = article.get_content()
+    return render_template('view_article.html', topic=topic, article=article, content=content)
 
 @app.route('/generate_content', methods=['GET', 'POST'])
 def generate_content():
