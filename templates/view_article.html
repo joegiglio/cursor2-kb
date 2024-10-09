@@ -1,31 +1,54 @@
 {% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/article_view.css') }}">
+{% endblock %}
+
 {% block content %}
-<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <div class="container mt-4">
-    <h1>{{ article.title }}</h1>
-    <div id="article-content" class="article-content ql-container ql-snow">
-        <div class="ql-editor"></div>
-    </div>
-</div>
-<script>
-    var quill = new Quill('#article-content .ql-editor', {
-        readOnly: true,
-        modules: {
-            toolbar: false
-        },
-        theme: 'snow'
-    });
-    quill.setContents({{ content|tojson|safe }});
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('knowledge_base') }}">Knowledge Base</a></li>
+            <li class="breadcrumb-item">&gt;</li>
+            <li class="breadcrumb-item"><a href="{{ url_for('knowledge_base') }}#topic-{{ topic.id }}">{{ topic.name }}</a></li>
+        </ol>
+    </nav>
+
+    <h1 class="article-title mb-4">{{ article.title }}</h1>
     
-    // Force Quill to use our desired font size
-    quill.root.style.fontSize = '16px';
-</script>
-<!-- Add this just before the closing </body> tag -->
-<style>
-    .ql-editor {
-        font-size: 16px !important;
-        line-height: 1.5 !important;
-    }
-</style>
+    <div id="article-content">
+        {% if content is mapping %}
+            <!-- If content is a dictionary (JSON format) -->
+            <div id="quill-content"></div>
+        {% else %}
+            <!-- If content is a string (plain text or HTML) -->
+            {{ content|safe }}
+        {% endif %}
+    </div>
+
+    {% if article.keywords %}
+    <div class="mt-4">
+        <h5>Keywords:</h5>
+        <p class="keywords">
+            {% for keyword in article.keywords.split(',') %}
+            <span class="badge bg-secondary">{{ keyword.strip() }}</span>
+            {% endfor %}
+        </p>
+    </div>
+    {% endif %}
+
+    {% if content is mapping %}
+        <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+        <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+        <script>
+            var quill = new Quill('#quill-content', {
+                readOnly: true,
+                modules: {
+                    toolbar: false
+                }
+            });
+            quill.setContents({{ content|tojson|safe }});
+        </script>
+    {% endif %}
+</div>
 {% endblock %}

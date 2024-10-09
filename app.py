@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory, make_response
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory, make_response, get_flashed_messages
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from sqlalchemy import func, or_
@@ -58,10 +58,16 @@ class Article(db.Model):
         return f'<Article {self.title}>'
 
     def set_content(self, quill_content):
-        self.content = json.dumps(quill_content)
+        if isinstance(quill_content, str):
+            self.content = quill_content
+        else:
+            self.content = json.dumps(quill_content)
     
     def get_content(self):
-        return json.loads(self.content)
+        try:
+            return json.loads(self.content)
+        except json.JSONDecodeError:
+            return self.content  # Return content as-is if it's not valid JSON
 
 @app.route('/')
 def index():
@@ -96,9 +102,21 @@ def search():
 
     results = []
     for article in articles.items:
-        # Remove HTML tags and get a plain text blurb
-        soup = BeautifulSoup(article.content, 'html.parser')
-        text_content = soup.get_text()
+        content = article.get_content()
+        if isinstance(content, dict):
+            # If content is in Quill Delta format
+            text_content = ''
+            for op in content.get('ops', []):
+                if isinstance(op.get('insert'), str):
+                    text_content += op.get('insert', '')
+                elif isinstance(op.get('insert'), dict):
+                    # Handle image inserts or other complex inserts
+                    text_content += ' '
+        else:
+            # If content is HTML or plain text
+            soup = BeautifulSoup(content, 'html.parser')
+            text_content = soup.get_text()
+
         blurb = re.sub(r'\s+', ' ', text_content)[:200] + '...'
 
         results.append({
@@ -118,6 +136,11 @@ def search():
 def is_valid_search_query(query):
     # Allow letters (including international characters), numbers, and spaces
     return bool(re.match(r'^[\w\s]{3,}$', query, re.UNICODE))
+
+def flash_once(message, category='message'):
+    existing_messages = get_flashed_messages(with_categories=True)
+    if (category, message) not in existing_messages:
+        flash(message, category)
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
@@ -171,7 +194,8 @@ def admin():
                     db.session.delete(article)
                 db.session.delete(topic)
                 db.session.commit()
-                return jsonify({'status': 'success', 'message': 'Topic and associated articles deleted successfully.'})
+                flash('Topic and associated articles deleted successfully.', 'success')
+                return jsonify({'status': 'success'})
             else:
                 return jsonify({'status': 'error', 'message': 'Topic not found.'})
         return redirect(url_for('admin'))
@@ -213,8 +237,9 @@ def new_article(topic_id):
                 flash('Article created successfully.', 'success')
             except json.JSONDecodeError:
                 flash('Invalid article content. Please try again.', 'error')
-            
+        
         return redirect(url_for('admin_topic', topic_id=topic_id))
+    
     return render_template('new_article.html', active_page='admin', topic=topic)
 
 @app.route('/admin/topic/<int:topic_id>/article/<int:article_id>/edit', methods=['GET', 'POST'])
@@ -230,11 +255,17 @@ def edit_article(topic_id, article_id):
         keyword_list = [k.strip() for k in keywords.split(',') if len(k.strip()) >= 3]
         article.keywords = ', '.join(keyword_list)
 
-        # Use a more permissive bleach cleaning
-        article.set_content(json.loads(content))
-        db.session.commit()
-        flash('Article updated successfully.', 'success')
+        try:
+            # Parse the JSON content
+            quill_content = json.loads(content)
+            article.set_content(quill_content)
+            db.session.commit()
+            flash('Article updated successfully.', 'success')
+        except json.JSONDecodeError:
+            flash('Invalid article content. Please try again.', 'error')
+        
         return redirect(url_for('admin_topic', topic_id=topic_id))
+    
     return render_template('edit_article.html', active_page='admin', topic=topic, article=article)
 
 @app.route('/admin/topic/<int:topic_id>/article/<int:article_id>/delete', methods=['POST'])
@@ -299,6 +330,7 @@ def view_article(topic_id, article_id):
     topic = Topic.query.get_or_404(topic_id)
     article = Article.query.get_or_404(article_id)
     content = article.get_content()
+    
     return render_template('view_article.html', topic=topic, article=article, content=content)
 
 @app.route('/generate_content', methods=['GET', 'POST'])
@@ -342,7 +374,7 @@ def generate_content():
                 db.session.add(new_article)
         
         db.session.commit()
-        flash(f'Generated {num_topics} topics with {num_articles} articles each. {image_percentage}% of articles have images.', 'success')
+        flash_once(f'Generated {num_topics} topics with {num_articles} articles each. {image_percentage}% of articles have images.', 'success')
         return redirect(url_for('generate_content'))
     
     return render_template('generate_content.html', active_page='generate_content')
@@ -375,7 +407,7 @@ def settings():
         theme = request.form.get('theme', 'light')
         resp = make_response(redirect(url_for('settings')))
         resp.set_cookie('theme', theme, max_age=30*24*60*60)  # Cookie expires in 30 days
-        flash('Settings updated successfully.', 'success')
+        flash_once('Settings updated successfully.', 'success')
         return resp
     
     current_theme = request.cookies.get('theme', 'light')

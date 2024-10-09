@@ -1,19 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-4">
-    <div id="flash-messages">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              </div>
-            {% endfor %}
-          {% endif %}
-        {% endwith %}
-    </div>
-
     <div class="row mb-4">
         <div class="col-12 text-center">
             <img src="{{ url_for('static', filename='images/book-icon.png') }}" alt="Knowledge Base Icon" width="100">
@@ -133,23 +120,6 @@ $(document).ready(function() {
         },
     });
 
-    // Function to add a new flash message
-    function addFlashMessage(message, category) {
-        var alertClass = category === 'success' ? 'alert-success' : 'alert-danger';
-        var flashMessage = $('<div class="alert ' + alertClass + ' alert-dismissible fade show" role="alert">' +
-                             message +
-                             '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
-                             '</div>');
-        $('#flash-messages').append(flashMessage);
-        
-        // Fade out and remove the message after 5 seconds
-        setTimeout(function() {
-            flashMessage.fadeOut('slow', function() {
-                $(this).remove();
-            });
-        }, 5000);
-    }
-
     // Delete topic confirmation
     $('.delete-topic').on('click', function() {
         var topicId = $(this).data('topic-id');
@@ -162,8 +132,6 @@ $(document).ready(function() {
             
             if (userInput && userInput.toLowerCase() === 'delete') {
                 deleteTopic(topicId, userInput);
-            } else {
-                addFlashMessage('Deletion cancelled. You must type "delete" to confirm.', 'error');
             }
         } else {
             // Topic has no articles, show simple confirmation
@@ -180,22 +148,15 @@ $(document).ready(function() {
             confirmation: confirmation 
         }, function(response) {
             if (response.status === 'success') {
-                addFlashMessage(response.message, 'success');
                 $('li[data-id="' + topicId + '"]').remove();
+                location.reload(); // Reload the page to show the Flask message
             } else {
-                addFlashMessage(response.message, 'error');
+                alert(response.message); // Show error message
             }
         }).fail(function() {
-            addFlashMessage('An error occurred while deleting the topic. Please try again.', 'error');
+            alert('An error occurred while deleting the topic. Please try again.');
         });
     }
-
-    // Fade out existing flash messages after 5 seconds
-    setTimeout(function() {
-        $('.alert').fadeOut('slow', function() {
-            $(this).remove();
-        });
-    }, 5000);
 });
 </script>
 {% endblock %}
