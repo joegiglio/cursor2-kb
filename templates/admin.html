@@ -46,7 +46,7 @@
                             <li class="list-group-item d-flex justify-content-between align-items-center" data-id="{{ topic.id }}">
                                 <span class="handle me-2" style="cursor: move;">&#9776;</span>
                                 <a href="{{ url_for('admin_topic', topic_id=topic.id) }}" class="flex-grow-1">{{ topic.name }}</a>
-                                <span class="badge bg-primary rounded-pill me-2">{{ topic.articles|length }} / {{ max_articles }} articles</span>
+                                <a href="{{ url_for('admin_topic', topic_id=topic.id) }}"><span class="badge bg-primary rounded-pill me-2">{{ topic.articles|length }} / {{ max_articles }} articles</span></a>
                                 <div>
                                     <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ topic.id }}">Edit</button>
                                     <button class="btn btn-sm btn-outline-danger delete-topic" data-topic-id="{{ topic.id }}" data-article-count="{{ topic.articles|length }}">Delete</button>

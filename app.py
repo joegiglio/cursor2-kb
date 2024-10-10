@@ -255,18 +255,13 @@ def edit_article(topic_id, article_id):
         keyword_list = [k.strip() for k in keywords.split(',') if len(k.strip()) >= 3]
         article.keywords = ', '.join(keyword_list)
 
-        try:
-            # Parse the JSON content
-            quill_content = json.loads(content)
-            article.set_content(quill_content)
-            db.session.commit()
-            flash('Article updated successfully.', 'success')
-        except json.JSONDecodeError:
-            flash('Invalid article content. Please try again.', 'error')
-        
+        article.content = content  # Content is already in JSON format
+        db.session.commit()
+        flash('Article updated successfully.', 'success')
         return redirect(url_for('admin_topic', topic_id=topic_id))
     
-    return render_template('edit_article.html', active_page='admin', topic=topic, article=article)
+    content = json.loads(article.content)  # Parse the JSON string to a Python object
+    return render_template('edit_article.html', active_page='admin', topic=topic, article=article, content=content)
 
 @app.route('/admin/topic/<int:topic_id>/article/<int:article_id>/delete', methods=['POST'])
 def delete_article(topic_id, article_id):
@@ -354,19 +349,23 @@ def generate_content():
                 title = fake.sentence(nb_words=4)
                 content_paragraphs = fake.paragraphs(nb=random.randint(3, 10))
                 
-                content = '<p>' + '</p><p>'.join(content_paragraphs) + '</p>'
+                # Create Quill Delta format content
+                quill_content = {
+                    "ops": [{"insert": paragraph + "\n\n"} for paragraph in content_paragraphs]
+                }
                 
-                if random.random() < image_percentage / 100:  # Use the specified percentage
+                if random.random() < image_percentage / 100:
                     image_url = add_random_image()
                     if image_url:
-                        content += f'<p><img src="{image_url}" alt="Random Image" style="max-width: 100%; height: auto;"></p>'
+                        quill_content["ops"].append({"insert": {"image": image_url}})
+                        quill_content["ops"].append({"insert": "\n"})
                 
                 keywords = ', '.join(fake.words(nb=random.randint(3, 8)))
                 
                 max_article_sort_order = db.session.query(func.max(Article.sort_order)).filter_by(topic_id=new_topic.id).scalar() or 0
                 new_article = Article(
                     title=title[:100],  # Limit title to 100 characters
-                    content=content,
+                    content=json.dumps(quill_content),  # Store as JSON string
                     keywords=keywords,
                     topic_id=new_topic.id,
                     sort_order=max_article_sort_order + 1
@@ -374,7 +373,7 @@ def generate_content():
                 db.session.add(new_article)
         
         db.session.commit()
-        flash_once(f'Generated {num_topics} topics with {num_articles} articles each. {image_percentage}% of articles have images.', 'success')
+        flash(f'Generated {num_topics} topics with {num_articles} articles each. {image_percentage}% of articles have images.', 'success')
         return redirect(url_for('generate_content'))
     
     return render_template('generate_content.html', active_page='generate_content')

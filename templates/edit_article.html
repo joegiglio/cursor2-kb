@@ -18,85 +18,36 @@
             <small class="form-text text-muted">Enter keywords separated by commas. Each keyword must be at least 3 characters long.</small>
         </div>
         <button type="submit" class="btn btn-primary">Update Article</button>
+        <a href="{{ url_for('admin_topic', topic_id=topic.id) }}" class="btn btn-secondary text-white">Cancel Update</a>
     </form>
 </div>
 
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-<script src="{{ url_for('static', filename='scripts/quill-tooltips.js') }}"></script>
 <script>
 $(document).ready(function() {
-    var toolbarOptions = [
-        [{ 'header': [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        ['blockquote', 'code-block'],
-        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-        [{ 'script': 'sub'}, { 'script': 'super' }],
-        [{ 'indent': '-1'}, { 'indent': '+1' }],
-        [{ 'direction': 'rtl' }],
-        [{ 'size': ['small', false, 'large', 'huge'] }],
-        [{ 'align': ['', 'center', 'right', 'justify'] }],
-        ['link', 'image'],
-        ['clean']
-    ];
-
     var quill = new Quill('#editor', {
         theme: 'snow',
         modules: {
-            toolbar: {
-                container: toolbarOptions,
-                handlers: {
-                    image: selectLocalImage
-                }
-            }
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                ['blockquote', 'code-block'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'script': 'sub'}, { 'script': 'super' }],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],
+                [{ 'direction': 'rtl' }],
+                [{ 'size': ['small', false, 'large', 'huge'] }],
+                [{ 'align': [] }],
+                ['link', 'image'],
+                ['clean']
+            ]
         }
     });
 
     // Set the initial content
-    var content = {{ article.content|tojson|safe }};
-    if (content) {
-        quill.setContents(JSON.parse(content));
-    }
-
-    applyQuillTooltips();
-
-    function selectLocalImage() {
-        const input = $('<input type="file" accept="image/*">');
-        input.click();
-
-        input.on('change', function() {
-            const file = this.files[0];
-            if (file) {
-                uploadImage(file);
-            }
-        });
-    }
-
-    function uploadImage(file) {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        $.ajax({
-            url: '{{ url_for("upload_image") }}',
-            type: 'POST',
-            data: formData,
-            contentType: false,
-            processData: false,
-            success: function(response) {
-                if (response.success) {
-                    const range = quill.getSelection();
-                    quill.insertEmbed(range.index, 'image', response.url);
-                } else {
-                    console.error('Image upload failed:', response.message);
-                    alert('Image upload failed: ' + response.message);
-                }
-            },
-            error: function() {
-                console.error('Image upload failed');
-                alert('Image upload failed. Please try again.');
-            }
-        });
-    }
+    var content = {{ content|safe }};
+    quill.setContents(content);
 
     $('form').submit(function() {
         $('#content').val(JSON.stringify(quill.getContents()));
