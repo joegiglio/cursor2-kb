@@ -5,6 +5,7 @@ def test_homepage(page: Page):
     expect(page).to_have_title("Knowledge Base")
     expect(page.locator("h1")).to_contain_text("Knowledge Base")
 
+
 def test_admin_page(page: Page):
     page.goto("http://localhost:5000/admin")
 
@@ -13,51 +14,66 @@ def test_admin_page(page: Page):
     expect(locator).to_contain_text("Knowledge Base Admin")
 
 
-# def test_create_topic(page: Page):
-#     page.goto("http://localhost:5000/admin")
-#     page.fill("input[name='topic_name']", "Yankee1")
-#     page.click("button:has-text('Create Topic')")
-#     #page.wait_for_timeout(1000)
-#     #expect(page.locator(".alert-success")).to_contain_text("Topic created successfully")
-#     #page.wait_for_timeout(1000)
-#     expect(page.locator("#topics-list")).to_contain_text("Walk")
+def test_create_topic_japanese(page: Page):
+    import random
+    import string
 
+    # Generate a random 10-character string with Japanese characters
+    japanese_chars = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん"
+    random_topic = ''.join(random.choice(japanese_chars) for _ in range(10))
 
-def xtest_create_topic(page: Page):
     page.goto("http://localhost:5000/admin")
-    page.fill("input[name='topic_name']", "Yankee1")
-    
-    # Add console log listener
-    page.on("console", lambda msg: print(f"Browser log: {msg.text}"))
-    
-    # Click the button and wait for navigation
-    with page.expect_navigation(wait_until="networkidle") as navigation_info:
-        page.click("button:has-text('Create Topic')")
-    
-    # Print navigation information
-    print(f"Navigation info: {navigation_info.value}")
-    
-    # Check the current URL
-    current_url = page.url
-    print(f"Current URL after navigation: {current_url}")
-    
-    # Capture a screenshot for debugging
-    page.screenshot(path="after_create_topic.png")
-    
-    # Continue with your assertions
-    expect(page.locator("#topics-list")).to_contain_text("Walk")
+    page.fill("input[name='topic_name']", random_topic)
+    page.click("button:has-text('Create Topic')")
+    expect(page.locator("#topics-list")).to_contain_text(random_topic)
 
 
+def test_edit_topic(page: Page):
+    import random
+    import string
+
+    # Generate a random topic name
+    random_topic = ''.join(random.choice(string.ascii_letters) for _ in range(10))
+
+    page.goto("http://localhost:5000/admin")
+    page.fill("input[name='topic_name']", random_topic)
+    page.click("button:has-text('Create Topic')")
+    expect(page.locator("#topics-list")).to_contain_text(random_topic)
+
+    # Edit the newly created topic
+    page.click(f"text=Edit >> nth=0")
+    new_topic_name = f"Updated {random_topic}"
+    page.fill("input[name='new_name']", new_topic_name)
+    page.click("button:has-text('Save Changes')")
+
+    # Verify the topic was updated successfully
+    expect(page.locator(".alert-success")).to_contain_text("Topic updated successfully")
+    expect(page.locator("#topics-list")).to_contain_text(new_topic_name)
 
 
+def xtest_edit_topic(page: Page):
+    import random
+    import string
 
-# def test_edit_topic(page: Page):
-#     page.goto("http://localhost:5000/admin")
-#     page.click("text=Test Topic")
-#     page.fill("input[name='new_name']", "Updated Test Topic")
-#     page.click("button:has-text('Update')")
-#     expect(page.locator(".alert-success")).to_contain_text("Topic updated successfully")
-#     expect(page.locator("table")).to_contain_text("Updated Test Topic")
+    # Generate a random topic name
+    random_topic = ''.join(random.choice(string.ascii_letters) for _ in range(10))
+
+    # Create a new topic
+    page.goto("http://localhost:5000/admin")
+    page.fill("input[name='topic_name']", random_topic)
+    page.click("button:has-text('Create Topic')")
+    expect(page.locator("#topics-list")).to_contain_text(random_topic)
+
+    # # Edit the newly created topic
+    # page.click(f"text={random_topic}")
+    # new_topic_name = f"Updated {random_topic}"
+    # page.fill("input[name='new_name']", new_topic_name)
+    # page.click("button:has-text('Update')")
+
+    # # Verify the topic was updated successfully
+    # expect(page.locator(".alert-success")).to_contain_text("Topic updated successfully")
+    # expect(page.locator("table")).to_contain_text(new_topic_name)
+    # expect(page.locator("table")).not_to_contain_text(random_topic)
 
 # def test_delete_topic(page: Page):
 #     page.goto("http://localhost:5000/admin")
