@@ -16,9 +16,9 @@ import json
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///topics.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'your_secret_key_here'  # Change this to a random secret key
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
+app.config['TESTING'] = True
 
 # Ensure the upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -414,3 +414,11 @@ def settings():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+# Add this function for test configuration
+def create_app(config_name):
+    if config_name == 'testing':
+        print("testing mode activated!")
+        app.config['TESTING'] = True
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    return app

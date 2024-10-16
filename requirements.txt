@@ -25,3 +25,5 @@ typing_extensions==4.12.2
 urllib3==2.2.3
 webencodings==0.5.1
 Werkzeug==3.0.4
+playwright==1.42.0
+pytest-playwright==0.4.4
