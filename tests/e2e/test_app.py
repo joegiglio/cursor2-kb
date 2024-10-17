@@ -51,54 +51,43 @@ def test_edit_topic(page: Page):
     expect(page.locator("#topics-list")).to_contain_text(new_topic_name)
 
 
-def xtest_edit_topic(page: Page):
+def xtest_delete_empty_topic(page: Page):
+
     import random
     import string
 
     # Generate a random topic name
     random_topic = ''.join(random.choice(string.ascii_letters) for _ in range(10))
 
-    # Create a new topic
     page.goto("http://localhost:5000/admin")
     page.fill("input[name='topic_name']", random_topic)
     page.click("button:has-text('Create Topic')")
-    expect(page.locator("#topics-list")).to_contain_text(random_topic)
 
-    # # Edit the newly created topic
-    # page.click(f"text={random_topic}")
-    # new_topic_name = f"Updated {random_topic}"
-    # page.fill("input[name='new_name']", new_topic_name)
-    # page.click("button:has-text('Update')")
+    #page.click("button:has-text('Delete')")
+    page.click(f"text=Delete")
+ 
+   
+    # Wait for the dialog to appear and be handled
+    page.wait_for_event("dialog")
 
-    # # Verify the topic was updated successfully
-    # expect(page.locator(".alert-success")).to_contain_text("Topic updated successfully")
-    # expect(page.locator("table")).to_contain_text(new_topic_name)
-    # expect(page.locator("table")).not_to_contain_text(random_topic)
+    expect(page.locator(".alert-success")).to_contain_text("Topic and associated articles deleted successfully")
+    expect(page.locator("table")).not_to_contain_text(random_topic)
 
-# def test_delete_topic(page: Page):
-#     page.goto("http://localhost:5000/admin")
-#     page.click("text=Updated Test Topic")
-#     page.click("button:has-text('Delete')")
-#     page.fill("input[name='confirmation']", "delete")
-#     page.click("button:has-text('Confirm Delete')")
-#     expect(page.locator(".alert-success")).to_contain_text("Topic and associated articles deleted successfully")
-#     expect(page.locator("table")).not_to_contain_text("Updated Test Topic")
-
-# def test_create_article(page: Page):
-#     # First, create a topic
-#     page.goto("http://localhost:5000/admin")
-#     page.fill("input[name='topic_name']", "Article Test Topic")
-#     page.click("button:has-text('Create Topic')")
+def test_create_article(page: Page):
+    # First, create a topic
+    page.goto("http://localhost:5000/admin")
+    page.fill("input[name='topic_name']", "Article Test Topic")
+    page.click("button:has-text('Create Topic')")
     
-#     # Now create an article
-#     page.click("text=Article Test Topic")
-#     page.click("text=New Article")
-#     page.fill("input[name='title']", "Test Article")
-#     page.fill(".ql-editor", "This is a test article content.")
-#     page.fill("input[name='keywords']", "test, article, keywords")
-#     page.click("button:has-text('Create Article')")
-#     expect(page.locator(".alert-success")).to_contain_text("Article created successfully")
-#     expect(page.locator("table")).to_contain_text("Test Article")
+    # Now create an article
+    page.click("text=Article Test Topic")
+    page.click("text=New Article")
+    page.fill("input[name='title']", "Test Article")
+    page.fill(".ql-editor", "This is a test article content.")
+    page.fill("input[name='keywords']", "test, article, keywords")
+    page.click("button:has-text('Create Article')")
+    expect(page.locator(".alert-success")).to_contain_text("Article created successfully")
+    expect(page.locator(".list-group")).to_contain_text("Test Article")
 
 # def test_edit_article(page: Page):
 #     page.goto("http://localhost:5000/admin")
@@ -120,7 +109,7 @@ def xtest_edit_topic(page: Page):
 #     expect(page.locator("table")).not_to_contain_text("Updated Test Article")
 
 # def test_search_functionality(page: Page):
-    page.goto("http://localhost:5000")
-    page.fill("input[name='query']", "test")
-    page.click("button:has-text('Search')")
-    expect(page.locator("#search-results")).to_be_visible()
+    # page.goto("http://localhost:5000")
+    # page.fill("input[name='query']", "test")
+    # page.click("button:has-text('Search')")
+    # expect(page.locator("#search-results")).to_be_visible()
