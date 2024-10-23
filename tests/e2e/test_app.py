@@ -108,8 +108,9 @@ def test_create_article(page: Page):
 #     expect(page.locator(".alert-success")).to_contain_text("Article deleted successfully")
 #     expect(page.locator("table")).not_to_contain_text("Updated Test Article")
 
-# def test_search_functionality(page: Page):
-    # page.goto("http://localhost:5000")
-    # page.fill("input[name='query']", "test")
-    # page.click("button:has-text('Search')")
-    # expect(page.locator("#search-results")).to_be_visible()
+def test_search_functionality(page: Page):
+    page.goto("http://localhost:5000")
+    page.fill("#search-input", "test")
+    page.click("button:has-text('Search')")
+    expect(page.locator("#search-results")).to_be_visible()
+    expect(page.locator("#results-list")).to_contain_text("Test Article")
