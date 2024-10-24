@@ -1,4 +1,8 @@
 from playwright.sync_api import Page, expect
+import re
+import random
+import string
+import time
 
 def test_homepage(page: Page):
     page.goto("http://localhost:5000")
@@ -29,22 +33,43 @@ def test_create_topic_japanese(page: Page):
 
 
 def test_edit_topic(page: Page):
-    import random
-    import string
+    # This stupid test took forever.  Wasted a lot of AI time.  I am not sure why it was so 
+    # difficult to get the correct locators.  Frustrating!  - JG 10/23/24
 
     # Generate a random topic name
     random_topic = ''.join(random.choice(string.ascii_letters) for _ in range(10))
+    new_topic_name = f"Updated {random_topic}"
 
+    # Create a new topic
     page.goto("http://localhost:5000/admin")
-    page.fill("input[name='topic_name']", random_topic)
+    page.fill("input#topic_name", random_topic)
     page.click("button:has-text('Create Topic')")
+
+    # Verify the new topic exists
     expect(page.locator("#topics-list")).to_contain_text(random_topic)
 
-    # Edit the newly created topic
-    page.click(f"text=Edit >> nth=0")
-    new_topic_name = f"Updated {random_topic}"
-    page.fill("input[name='new_name']", new_topic_name)
-    page.click("button:has-text('Save Changes')")
+    # Find all edit buttons and click the last one
+    edit_buttons = page.query_selector_all("button[id^='edit-topic-']")
+    if not edit_buttons:
+        raise Exception("No edit buttons found on the page")
+    last_edit_button = edit_buttons[-1]
+    last_edit_button_id = last_edit_button.get_attribute('id')
+    topic_id = last_edit_button_id.split('-')[-1]
+    last_edit_button.click()
+
+    # Wait for the specific modal to be visible
+    modal_selector = f"#editModal{topic_id}"
+    modal = page.locator(modal_selector)
+    expect(modal).to_be_visible()
+
+    # Update the topic name in the active modal
+    input_field = modal.locator(f"#new_name{topic_id}")
+    expect(input_field).to_be_visible()
+    input_field.fill(new_topic_name)
+    modal.locator("button:has-text('Save changes')").click()
+
+    # Wait for the modal to close
+    expect(modal).to_be_hidden()
 
     # Verify the topic was updated successfully
     expect(page.locator(".alert-success")).to_contain_text("Topic updated successfully")

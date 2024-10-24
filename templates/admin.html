@@ -48,7 +48,7 @@
                                 <a href="{{ url_for('admin_topic', topic_id=topic.id) }}" class="flex-grow-1">{{ topic.name }}</a>
                                 <a href="{{ url_for('admin_topic', topic_id=topic.id) }}"><span class="badge bg-primary rounded-pill me-2">{{ topic.articles|length }} / {{ max_articles }} articles</span></a>
                                 <div>
-                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ topic.id }}">Edit</button>
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ topic.id }}" id="edit-topic-{{ topic.id }}">Edit</button>
                                     <button class="btn btn-sm btn-outline-danger delete-topic" data-topic-id="{{ topic.id }}" data-article-count="{{ topic.articles|length }}">Delete</button>
                                 </div>
                             </li>
@@ -72,7 +72,7 @@
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                <button type="submit" class="btn btn-primary">Save changes</button>
+                                                <button type="submit" class="btn btn-primary" id="save-changes">Save changes</button>
                                             </div>
                                         </form>
                                     </div>
