@@ -27,7 +27,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 # Define maximum number of topics and articles
-MAX_TOPICS = 10
+MAX_TOPICS = 100
 MAX_ARTICLES_PER_TOPIC = 25
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}

@@ -1,5 +1,11 @@
-pytest tests/e2e/test_app.py -v --screenshot=on --full-page-screenshot --numprocesses 3
+Use pytest.ini?
+
+pytest tests/e2e/test_app.py -v --screenshot=on --full-page-screenshot --numprocesses 6 --browser webkit --browser firefox --browser chromium
 
 playwright codegen
 
 pytest tests/e2e/test_app.py --slowmo 1000 -v --screenshot=on --full-page-screenshot -k "test_edit_topic" --headed
+
+debugger:
+PWDEBUG=1 pytest -s tests/e2e/test_app.py
+

@@ -24,3 +24,6 @@ migrations/
 
 # Uploaded files
 static/uploads/
+
+# Test screenshots
+test-results/
