@@ -24,3 +24,8 @@ migrations/
 
 # Uploaded files
 static/uploads/
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
