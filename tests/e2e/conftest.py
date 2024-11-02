@@ -21,22 +21,20 @@ def get_screen_resolution():
         # Fallback to a reasonable default if we can't get the screen resolution
         return {'width': 1366, 'height': 768}
 
-@pytest.fixture(scope="function")
-def page(browser, base_url):
-    """Configure browser context with system's screen resolution"""
-    resolution = get_screen_resolution()
-    context = browser.new_context(
-        base_url=base_url,
-        viewport=resolution,
-        no_viewport=True
-    )
+@pytest.fixture
+def page(browser):
+    """Create a new page with maximized browser window."""
+    context = browser.new_context(no_viewport=True)
     page = context.new_page()
-    page.set_viewport_size(resolution)
-    yield page
-    try:
-        context.close()
-    except:
-        pass
+    # Use JavaScript to maximize the window
+    page.evaluate("""() => {
+        window.moveTo(0, 0);
+        window.resizeTo(
+            window.screen.availWidth,
+            window.screen.availHeight
+        );
+    }""")
+    return page
 
 @pytest.fixture
 def admin_page(page: Page):
@@ -166,3 +164,15 @@ def ensure_screenshots(page: Page, request):
         )
     except Exception as e:
         print(f"Failed to take screenshot: {e}")
+
+@pytest.fixture
+def browser_context_args(browser_context_args):
+    """Fixture to set browser context arguments for all tests."""
+    return {
+        **browser_context_args,
+        "viewport": None,
+        "screen": {
+            "width": 1920,
+            "height": 1080
+        }
+    }

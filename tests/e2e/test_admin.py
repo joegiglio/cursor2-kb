@@ -5,7 +5,7 @@ from conftest import generate_test_data
 @pytest.fixture
 def admin_page(page: Page, base_url):
     """Setup admin access"""
-    page.goto("/admin")
+    page.goto(f"{base_url}/admin")
     return page
 
 def test_create_topic(admin_page: Page):
@@ -13,12 +13,24 @@ def test_create_topic(admin_page: Page):
     data = generate_test_data()
     
     admin_page.fill("#topic_name", data["title"])
-    
     admin_page.click("button:has-text('Create Topic')")
     
     # Verify success
     expect(admin_page.locator(".alert-success")).to_be_visible()
     expect(admin_page.locator(f"li:has-text('{data['title']}')")).to_be_visible()
+    
+    # Get topic ID for cleanup
+    topic_id = admin_page.locator(f"li:has-text('{data['title']}')").get_attribute("data-id")
+    
+    # Set up dialog handler BEFORE clicking delete
+    admin_page.once("dialog", lambda dialog: dialog.accept())
+    
+    # Cleanup
+    delete_button = admin_page.locator(f"li[data-id='{topic_id}'] .delete-topic")
+    delete_button.click()
+    
+    # Verify deletion
+    expect(admin_page.locator(f"li:has-text('{data['title']}')")).not_to_be_visible()
 
 def test_edit_topic(admin_page: Page, test_topic):
     """Test topic editing with known topic"""
