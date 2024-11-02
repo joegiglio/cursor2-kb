@@ -32,17 +32,44 @@ def test_create_topic(admin_page: Page):
     # Verify deletion
     expect(admin_page.locator(f"li:has-text('{data['title']}')")).not_to_be_visible()
 
-def test_edit_topic(admin_page: Page, test_topic):
-    """Test topic editing with known topic"""
+def test_edit_topic(admin_page: Page):
+    """Test topic editing"""
+    # Generate initial and new test data
+    initial_data = generate_test_data()
     new_data = generate_test_data()
     
-    # Click edit button in modal
-    admin_page.click(f"li[data-id='{test_topic['id']}'] button.btn-outline-primary")
-    admin_page.fill(f"#new_name{test_topic['id']}", new_data["title"])
-    admin_page.click("button:has-text('Save changes')")
+    # Create initial topic
+    admin_page.fill("#topic_name", initial_data["title"])
+    admin_page.click("button:has-text('Create Topic')")
     
+    # Verify initial creation
+    expect(admin_page.locator(".alert-success")).to_be_visible()
+    expect(admin_page.locator(f"li:has-text('{initial_data['title']}')")).to_be_visible()
+    
+    # Get topic ID for editing and cleanup
+    topic_id = admin_page.locator(f"li:has-text('{initial_data['title']}')").get_attribute("data-id")
+    
+    # Click edit button
+    admin_page.click(f"li[data-id='{topic_id}'] button:text('Edit')")
+    
+    # Wait for modal and fill in new name (using modal-specific selector)
+    modal = admin_page.locator(".modal:visible")
+    expect(modal).to_be_visible()
+    modal.locator("input[type='text']").fill(new_data["title"])
+    modal.locator("button:has-text('Save changes')").click()
+    
+    # Verify the edit was successful
     expect(admin_page.locator(".alert-success")).to_be_visible()
     expect(admin_page.locator(f"li:has-text('{new_data['title']}')")).to_be_visible()
+    expect(admin_page.locator(f"li:has-text('{initial_data['title']}')")).not_to_be_visible()
+    
+    # Cleanup
+    admin_page.once("dialog", lambda dialog: dialog.accept())
+    delete_button = admin_page.locator(f"li[data-id='{topic_id}'] .delete-topic")
+    delete_button.click()
+    
+    # Verify deletion
+    expect(admin_page.locator(f"li:has-text('{new_data['title']}')")).not_to_be_visible()
 
 def test_create_article(admin_page: Page, test_topic):
     """Test article creation with known topic"""
